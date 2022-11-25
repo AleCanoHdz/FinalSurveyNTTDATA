@@ -19,5 +19,13 @@ namespace FinalSurveyNTTDATA.Data
         public DbSet<FinalSurveyNTTDATA.Models.Category> Category { get; set; }
 
         public DbSet<FinalSurveyNTTDATA.Models.Question> Question { get; set; }
+
+        public DbSet<FinalSurveyNTTDATA.Models.QuestionAnswer> QuestionAnswer { get; set; }
+
+        public DbSet<FinalSurveyNTTDATA.Models.Role> Role { get; set; }
+
+        public DbSet<FinalSurveyNTTDATA.Models.Survey> Survey { get; set; }
+
+        public DbSet<FinalSurveyNTTDATA.Models.UserAnswer> UserAnswer { get; set; }
     }
 }

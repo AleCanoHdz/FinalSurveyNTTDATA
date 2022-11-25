@@ -20,5 +20,6 @@ namespace FinalSurveyNTTDATA.DTOs.AuthUser
         public byte[]? Photo { get; set; }
 
         public bool? Status { get; set; }
+
     }
 }

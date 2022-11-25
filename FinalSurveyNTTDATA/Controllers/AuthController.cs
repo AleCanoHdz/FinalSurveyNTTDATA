@@ -9,6 +9,9 @@ using FinalSurveyNTTDATA.Data;
 using FinalSurveyNTTDATA.Models;
 using FinalSurveyNTTDATA.Services.AuthService;
 using FinalSurveyNTTDATA.DTOs.AuthUser;
+using FinalSurveyNTTDATA.DTOs.Category;
+using AutoMapper;
+using Azure.Core;
 
 namespace FinalSurveyNTTDATA.Controllers
 {
@@ -18,11 +21,13 @@ namespace FinalSurveyNTTDATA.Controllers
     {
         private readonly DataContext _context;
         private readonly IAuthService _authService;
+        private readonly IMapper _mapper;
 
-        public AuthController(DataContext context, IAuthService authService)
+        public AuthController(DataContext context, IAuthService authService, IMapper mapper)
         {
             _context = context;
             _authService = authService;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
@@ -61,66 +66,61 @@ namespace FinalSurveyNTTDATA.Controllers
 
 
         // GET: api/Auth
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUser()
+        [HttpGet("User")]
+        public async Task<ActionResult<ServiceResponse<IEnumerable<GetUserDto>>>> GetUser()
         {
-            return await _context.User.ToListAsync();
+            var response = new ServiceResponse<IEnumerable<GetUserDto>>();
+
+            var user = await _context.User.ToListAsync();
+
+            response.Data = user.Select(c => _mapper.Map<GetUserDto>(c)).ToList();
+
+            return Ok(response);
         }
 
         // GET: api/Auth/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        [HttpGet("User{id}")]
+        public async Task<ActionResult<ServiceResponse<GetUserDto>>> GetUser(int id)
         {
-            var user = await _context.User.FindAsync(id);
+            var response = new ServiceResponse<GetUserDto>();
+            var user = await _context.User.FirstOrDefaultAsync(c => c.IdUser == id);
 
-            if (user == null)
+            if (user != null)
             {
-                return NotFound();
+                response.Data = _mapper.Map<GetUserDto>(user);
+            }
+            else
+            {
+                response.Success = false;
+                response.Message = "User not found";
+
+                return NotFound(response);
             }
 
-            return user;
+            return Ok(response);
         }
 
         // PUT: api/Auth/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<ActionResult<ServiceResponse<GetUserDto>>> PutUser(UpdateUserDto user, int id)
         {
-            if (id != user.IdUser)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
+            var rp = await _authService.UpdateUser(
+                new User
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    Name = user.Name,
+                    FirstSurname = user.FirstSurname,
+                    LastSurname = user.LastSurname,
+                    Status = user.Status,
+                    Photo = user.Photo,
+                }, user.Password, id
+            );
+
+            if (!rp.Success)
+            {
+                return BadRequest(rp);
             }
-
-            return NoContent();
-        }
-
-        // POST: api/Auth
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
-        {
-            _context.User.Add(user);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUser", new { id = user.IdUser }, user);
+            return Ok(rp);
         }
 
         // DELETE: api/Auth/5

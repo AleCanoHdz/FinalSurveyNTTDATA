@@ -1,4 +1,6 @@
-﻿using FinalSurveyNTTDATA.Data;
+﻿using AutoMapper;
+using FinalSurveyNTTDATA.Data;
+using FinalSurveyNTTDATA.DTOs.AuthUser;
 using FinalSurveyNTTDATA.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,11 +13,13 @@ namespace FinalSurveyNTTDATA.Services.AuthService
     {
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public AuthService(DataContext context, IConfiguration configuration)
+        public AuthService(DataContext context, IConfiguration configuration, IMapper mapper)
         {
             _context = context;
             _configuration = configuration;
+            _mapper = mapper;
         }
         public async Task<bool> Exist(string username)
         {
@@ -118,6 +122,49 @@ namespace FinalSurveyNTTDATA.Services.AuthService
             SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
+        }
+
+        public async Task<ServiceResponse<GetUserDto>> UpdateUser(User user, string password, int id)
+        {
+            ServiceResponse<GetUserDto> rp = new ServiceResponse<GetUserDto>();
+            try
+            {
+                if (await UserIdExist(id))
+                {
+                    CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
+
+                    user.PasswordHash = passwordHash;
+                    user.PasswordSalt = passwordSalt;
+                    user.IdUser = id;
+
+                    _context.Entry(user).State = EntityState.Modified;
+
+                    await _context.SaveChangesAsync();
+
+                    rp.Data = _mapper.Map<GetUserDto>(user);
+                }
+                else
+                {
+                    rp.Success = false;
+                    rp.Message = "User not found";
+                }
+            }
+            catch(DbUpdateException ex)
+            {
+                rp.Success = false;
+                rp.Message = ex.Message;
+            }
+
+            return rp;
+        }
+
+        public async Task<bool> UserIdExist(int id)
+        {
+            if (await _context.User.AnyAsync(c => c.IdUser.Equals(id)))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
