@@ -102,7 +102,7 @@ namespace FinalSurveyNTTDATA.Controllers
 
         // PUT: api/Auth/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("User{id}")]
         public async Task<ActionResult<ServiceResponse<GetUserDto>>> PutUser(UpdateUserDto user, int id)
         {
             var rp = await _authService.UpdateUser(
@@ -124,7 +124,7 @@ namespace FinalSurveyNTTDATA.Controllers
         }
 
         // DELETE: api/Auth/5
-        [HttpDelete("{id}")]
+        [HttpDelete("User{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.User.FindAsync(id);

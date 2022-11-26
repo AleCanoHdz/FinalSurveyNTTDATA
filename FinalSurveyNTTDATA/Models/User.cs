@@ -34,4 +34,6 @@ public partial class User
 
     [InverseProperty("User")]
     public virtual ICollection<UserAnswer> UserAnswers { get; } = new List<UserAnswer>();
+
+    public List<Role> Roles { get; set; }
 }

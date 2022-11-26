@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using FinalSurveyNTTDATA.Data;
 using FinalSurveyNTTDATA.Models;
 using AutoMapper;
-using FinalSurveyNTTDATA.DTOs.Category;
 using FinalSurveyNTTDATA.DTOs.Question;
 
 namespace FinalSurveyNTTDATA.Controllers

@@ -16,4 +16,6 @@ public partial class Role
     [StringLength(50)]
     [Unicode(false)]
     public string Name { get; set; } = null!;
+
+    public List<User> Users { get; set; }
 }

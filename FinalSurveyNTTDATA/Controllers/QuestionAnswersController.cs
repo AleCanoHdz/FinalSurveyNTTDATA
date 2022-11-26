@@ -8,9 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using FinalSurveyNTTDATA.Data;
 using FinalSurveyNTTDATA.Models;
 using AutoMapper;
-using FinalSurveyNTTDATA.DTOs.Category;
 using FinalSurveyNTTDATA.DTOs.QuestionAnswer;
-using FinalSurveyNTTDATA.DTOs.Question;
 
 namespace FinalSurveyNTTDATA.Controllers
 {
@@ -33,7 +31,7 @@ namespace FinalSurveyNTTDATA.Controllers
         {
             var response = new ServiceResponse<IEnumerable<GetQuestionAnswerDto>>();
 
-            var qa = await _context.QuestionAnswer.ToListAsync();
+            var qa = await _context.QuestionAnswer.Include(q => q.Question).ToListAsync();
 
             response.Data = qa.Select(c => _mapper.Map<GetQuestionAnswerDto> (c)).ToList();
 
