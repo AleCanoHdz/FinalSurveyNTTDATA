@@ -13,7 +13,7 @@ public partial class Question
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid IdQuestion { get; set; }
 
-    [StringLength(50)]
+    [StringLength(255)]
     [Unicode(false)]
     public string QuestionTxt { get; set; } = null!;
 
