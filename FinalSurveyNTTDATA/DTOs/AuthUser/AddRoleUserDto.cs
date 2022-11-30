@@ -3,6 +3,6 @@
     public class AddRoleUserDto
     {
         public Guid RolesIdRole { get; set; }
-        public int UsersIdUser { get; set; }
+        public Guid UsersIdUser { get; set; }
     }
 }

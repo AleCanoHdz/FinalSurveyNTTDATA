@@ -54,9 +54,9 @@ namespace FinalSurveyNTTDATA.Services.AuthService
             return rp;
         }
 
-        public async Task<ServiceResponse<int>> Register(User user, string password)
+        public async Task<ServiceResponse<string>> Register(User user, string password)
         {
-            ServiceResponse<int> rp = new ServiceResponse<int>();
+            ServiceResponse<string> rp = new ServiceResponse<string>();
             if (await Exist(user.Name))
             {
                 rp.Success = false;
@@ -72,7 +72,7 @@ namespace FinalSurveyNTTDATA.Services.AuthService
             _context.User.Add(user);
 
             await _context.SaveChangesAsync();
-            rp.Data = user.IdUser;
+            rp.Data = user.IdUser.ToString();
 
             return rp;
         }
@@ -128,7 +128,7 @@ namespace FinalSurveyNTTDATA.Services.AuthService
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<ServiceResponse<GetUserDto>> UpdateUser(User user, string password, int id)
+        public async Task<ServiceResponse<GetUserDto>> UpdateUser(User user, string password, Guid id)
         {
             ServiceResponse<GetUserDto> rp = new ServiceResponse<GetUserDto>();
             try
@@ -162,9 +162,9 @@ namespace FinalSurveyNTTDATA.Services.AuthService
             return rp;
         }
 
-        public async Task<bool> UserIdExist(int id)
+        public async Task<bool> UserIdExist(Guid id)
         {
-            if (await _context.User.AnyAsync(c => c.IdUser.Equals(id)))
+            if (await _context.User.AnyAsync(c => c.IdUser.ToString().ToUpper().Equals(id.ToString().ToUpper())))
             {
                 return true;
             }

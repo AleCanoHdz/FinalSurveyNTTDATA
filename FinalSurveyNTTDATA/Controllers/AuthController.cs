@@ -80,7 +80,7 @@ namespace FinalSurveyNTTDATA.Controllers
 
         // GET: api/Auth/5
         [HttpGet("User{id}")]
-        public async Task<ActionResult<ServiceResponse<GetUserDto>>> GetUser(int id)
+        public async Task<ActionResult<ServiceResponse<GetUserDto>>> GetUser(Guid id)
         {
             var response = new ServiceResponse<GetUserDto>();
             var user = await _context.User.FirstOrDefaultAsync(c => c.IdUser == id);
@@ -103,7 +103,7 @@ namespace FinalSurveyNTTDATA.Controllers
         // PUT: api/Auth/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("User{id}")]
-        public async Task<ActionResult<ServiceResponse<GetUserDto>>> PutUser(UpdateUserDto user, int id)
+        public async Task<ActionResult<ServiceResponse<GetUserDto>>> PutUser(UpdateUserDto user, Guid id)
         {
             var rp = await _authService.UpdateUser(
                 new User
@@ -125,13 +125,13 @@ namespace FinalSurveyNTTDATA.Controllers
 
         // DELETE: api/Auth/5
         [HttpDelete("User{id}")]
-        public async Task<ActionResult<ServiceResponse<GetUserDto>>> DeleteUser(int id)
+        public async Task<ActionResult<ServiceResponse<GetUserDto>>> DeleteUser(Guid id)
         {
             ServiceResponse<IEnumerable<GetUserDto>> serviceResponse = new ServiceResponse<IEnumerable<GetUserDto>>();
 
             try
             { 
-                User user = await _context.User.Include(r => r.Roles).FirstOrDefaultAsync(c => c.IdUser == id);
+                User user = await _context.User.Include(r => r.Roles).FirstOrDefaultAsync(c => c.IdUser.ToString().ToUpper().Equals(id.ToString().ToUpper()));
 
                 if (user != null)
                 {
@@ -196,7 +196,7 @@ namespace FinalSurveyNTTDATA.Controllers
             return serviceResp;
         }
 
-        private bool UserExists(int id)
+        private bool UserExists(Guid id)
         {
             return _context.User.Any(e => e.IdUser == id);
         }

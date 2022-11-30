@@ -136,7 +136,7 @@ namespace FinalSurveyNTTDATA.Controllers
                 else
                 {
                     serviceResponse.Success = false;
-                    serviceResponse.Message = "Categoria No Encontrado";
+                    serviceResponse.Message = "Category not found";
 
                     return NotFound(serviceResponse);
                 }

@@ -17,7 +17,7 @@ public partial class UserAnswer
     [Unicode(false)]
     public string UserAns { get; set; } = null!;
 
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
 
     public Guid QuestionId { get; set; }
 

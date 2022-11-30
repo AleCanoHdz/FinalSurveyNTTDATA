@@ -15,7 +15,7 @@ public partial class Question
 
     [StringLength(50)]
     [Unicode(false)]
-    public string QuestonTxt { get; set; } = null!;
+    public string QuestionTxt { get; set; } = null!;
 
     [StringLength(50)]
     [Unicode(false)]
