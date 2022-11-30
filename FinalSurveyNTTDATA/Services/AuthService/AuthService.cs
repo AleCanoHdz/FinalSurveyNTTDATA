@@ -33,7 +33,7 @@ namespace FinalSurveyNTTDATA.Services.AuthService
         public async Task<ServiceResponse<string>> Login(string username, string password)
         {
             var rp = new ServiceResponse<string>();
-            var user = await _context.User
+            var user = await _context.User.Include(c => c.Roles)
                 .FirstOrDefaultAsync(c => c.Name.ToLower().Equals(username.ToLower()));
 
             if (username == null)
@@ -103,9 +103,13 @@ namespace FinalSurveyNTTDATA.Services.AuthService
             {
                 new Claim(ClaimTypes.NameIdentifier, user.IdUser.ToString()),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Surname, user.FirstSurname),
-                //new Claim(ClaimTypes.Role, consumer.Role)
+                new Claim(ClaimTypes.Surname, user.FirstSurname)
             };
+
+            foreach (var role in user.Roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role.Name));
+            }
 
             SymmetricSecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8
                 .GetBytes(_configuration.GetSection("AppSettings:Token").Value));

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FinalSurveyNTTDATA.DTOs.Role;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinalSurveyNTTDATA.DTOs.AuthUser
@@ -20,6 +21,8 @@ namespace FinalSurveyNTTDATA.DTOs.AuthUser
         public byte[]? Photo { get; set; }
 
         public bool? Status { get; set; }
+
+        public List<GetRoleDto>? Roles { get; set; }
 
     }
 }

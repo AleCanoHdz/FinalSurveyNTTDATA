@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FinalSurveyNTTDATA.DTOs.AuthUser;
+using FinalSurveyNTTDATA.DTOs.Question;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinalSurveyNTTDATA.DTOs.UserAnswer
 {
@@ -8,8 +10,8 @@ namespace FinalSurveyNTTDATA.DTOs.UserAnswer
 
         public string UserAns { get; set; } = null!;
 
-        public int UserId { get; set; }
+        public GetUserDto? User { get; set; }
 
-        public Guid QuestionId { get; set; }
+        public GetQuestionDto? Question { get; set; }
     }
 }

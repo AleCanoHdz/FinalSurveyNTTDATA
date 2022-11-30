@@ -10,6 +10,7 @@ using FinalSurveyNTTDATA.Models;
 using AutoMapper;
 using FinalSurveyNTTDATA.DTOs.Role;
 using FinalSurveyNTTDATA.DTOs.Survey;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FinalSurveyNTTDATA.Controllers
 {
@@ -32,7 +33,7 @@ namespace FinalSurveyNTTDATA.Controllers
         {
             var response = new ServiceResponse<IEnumerable<GetSurveyDto>>();
 
-            var survey = await _context.Survey.ToListAsync();
+            var survey = await _context.Survey.Include(c => c.Category).ToListAsync();
 
             response.Data = survey.Select(c => _mapper.Map<GetSurveyDto>(c)).ToList();
 
@@ -101,7 +102,7 @@ namespace FinalSurveyNTTDATA.Controllers
 
         // POST: api/Surveys
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost,Authorize(Roles = "Admin")]
         public async Task<ActionResult<ServiceResponse<IEnumerable<GetSurveyDto>>>> PostSurvey(AddSurveyDto survey)
         {
             var serviceResponse = new ServiceResponse<IEnumerable<GetSurveyDto>>();
@@ -118,7 +119,7 @@ namespace FinalSurveyNTTDATA.Controllers
         }
 
         // DELETE: api/Surveys/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<ServiceResponse<GetRoleDto>>> DeleteSurvey(int id)
         {
             ServiceResponse<IEnumerable<GetSurveyDto>> serviceResponse = new ServiceResponse<IEnumerable<GetSurveyDto>>();

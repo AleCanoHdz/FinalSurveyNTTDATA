@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FinalSurveyNTTDATA.DTOs.QuestionAnswer;
+using FinalSurveyNTTDATA.DTOs.Survey;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinalSurveyNTTDATA.DTOs.Question
@@ -9,5 +11,6 @@ namespace FinalSurveyNTTDATA.DTOs.Question
         public string QuestonTxt { get; set; } = null!;
         public string QuestionType { get; set; } = null!;
         public int SurveyId { get; set; }
+        public GetSurveyDto? Survey { get; set; }
     }
 }

@@ -15,6 +15,6 @@ namespace FinalSurveyNTTDATA.DTOs.QuestionAnswer
 
         public Guid QuestionId { get; set; }
 
-        public GetQuestionDto Question { get; set; }
+        public GetQuestionDto? Question { get; set; }
     }
 }

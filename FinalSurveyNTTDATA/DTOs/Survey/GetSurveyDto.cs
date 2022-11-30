@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using FinalSurveyNTTDATA.DTOs.Category;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FinalSurveyNTTDATA.DTOs.Survey
 {
@@ -13,5 +14,7 @@ namespace FinalSurveyNTTDATA.DTOs.Survey
         public bool Status { get; set; }
 
         public Guid CategoryId { get; set; }
+
+        public GetCategoryDto? Category { get; set; }
     }
 }

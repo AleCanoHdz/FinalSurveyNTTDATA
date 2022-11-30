@@ -32,7 +32,7 @@ namespace FinalSurveyNTTDATA.Controllers
         {
             var response = new ServiceResponse<IEnumerable<GetUserAnswerDto>>();
 
-            var user = await _context.UserAnswer.ToListAsync();
+            var user = await _context.UserAnswer.Include(u => u.User).Include(q => q.Question).ToListAsync();
 
             response.Data = user.Select(c => _mapper.Map<GetUserAnswerDto>(c)).ToList();
 

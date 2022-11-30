@@ -71,7 +71,7 @@ namespace FinalSurveyNTTDATA.Controllers
         {
             var response = new ServiceResponse<IEnumerable<GetUserDto>>();
 
-            var user = await _context.User.ToListAsync();
+            var user = await _context.User.Include(c => c.Roles).ToListAsync();
 
             response.Data = user.Select(c => _mapper.Map<GetUserDto>(c)).ToList();
 
@@ -125,18 +125,75 @@ namespace FinalSurveyNTTDATA.Controllers
 
         // DELETE: api/Auth/5
         [HttpDelete("User{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<ActionResult<ServiceResponse<GetUserDto>>> DeleteUser(int id)
         {
-            var user = await _context.User.FindAsync(id);
-            if (user == null)
+            ServiceResponse<IEnumerable<GetUserDto>> serviceResponse = new ServiceResponse<IEnumerable<GetUserDto>>();
+
+            try
+            { 
+                User user = await _context.User.Include(r => r.Roles).FirstOrDefaultAsync(c => c.IdUser == id);
+
+                if (user != null)
+                {
+                    _context.User.Remove(user);
+                    await _context.SaveChangesAsync();
+
+                    serviceResponse.Data = _context.User.Include(r => r.Roles).Select(c => _mapper.Map<GetUserDto>(c)).ToList();
+                }
+                else
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "User not found";
+
+                    return NotFound(serviceResponse);
+                }
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return Ok(serviceResponse);
+        }
+
+        [HttpPost("RoleUser")]
+        public async Task<ActionResult<ServiceResponse<GetUserDto>>> AddUserRole(AddRoleUserDto newRoleUser)
+        {
+            var serviceResp = new ServiceResponse<GetUserDto>();
+
+            try
+            {
+                var user = await _context.User
+                                .Include(r => r.Roles)
+                                .FirstOrDefaultAsync(u => u.IdUser == newRoleUser.UsersIdUser);
+                if (user == null)
+                {
+                    serviceResp.Success = false;
+                    serviceResp.Message = "User not found";
+                    return NotFound(serviceResp);
+                }
+
+                var role = await _context.Role
+                                .FirstOrDefaultAsync(r => r.IdRole == newRoleUser.RolesIdRole);
+                if (role == null)
+                {
+                    serviceResp.Success = false;
+                    serviceResp.Message = "Role not found";
+                    return NotFound(serviceResp);
+                }
+
+                user.Roles.Add(role);
+                await _context.SaveChangesAsync();
+                serviceResp.Data = _mapper.Map<GetUserDto>(user);
+            }
+            catch (Exception ex)
+            {
+                serviceResp.Success = false;
+                serviceResp.Message = ex.Message;
             }
 
-            _context.User.Remove(user);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return serviceResp;
         }
 
         private bool UserExists(int id)

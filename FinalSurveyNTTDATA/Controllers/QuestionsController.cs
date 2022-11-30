@@ -9,6 +9,8 @@ using FinalSurveyNTTDATA.Data;
 using FinalSurveyNTTDATA.Models;
 using AutoMapper;
 using FinalSurveyNTTDATA.DTOs.Question;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace FinalSurveyNTTDATA.Controllers
 {
@@ -31,7 +33,7 @@ namespace FinalSurveyNTTDATA.Controllers
         {
             var response = new ServiceResponse<IEnumerable<GetQuestionDto>>();
 
-            var question = await _context.Question.ToListAsync();
+            var question = await _context.Question.Include(s => s.Survey).ToListAsync();
 
             response.Data = question.Select(c => _mapper.Map<GetQuestionDto>(c)).ToList();
 
@@ -100,7 +102,7 @@ namespace FinalSurveyNTTDATA.Controllers
 
         // POST: api/Questions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "Admin")]
         public async Task<ActionResult<ServiceResponse<IEnumerable<GetQuestionDto>>>> PostQuestion(AddQuestionDto question)
         {
             var serviceResponse = new ServiceResponse<IEnumerable<GetQuestionDto>>();
@@ -117,7 +119,7 @@ namespace FinalSurveyNTTDATA.Controllers
         }
 
         // DELETE: api/Questions/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<ServiceResponse<GetQuestionDto>>> DeleteQuestion(Guid id)
         {
             ServiceResponse<IEnumerable<GetQuestionDto>> serviceResponse = new ServiceResponse<IEnumerable<GetQuestionDto>>();
