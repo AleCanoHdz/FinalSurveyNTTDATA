@@ -39,8 +39,7 @@ namespace FinalSurveyNTTDATA.Migrations
                 name: "User",
                 columns: table => new
                 {
-                    IdUser = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdUser = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
                     FirstSurname = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
                     LastSurname = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
@@ -81,7 +80,7 @@ namespace FinalSurveyNTTDATA.Migrations
                 columns: table => new
                 {
                     RolesIdRole = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UsersIdUser = table.Column<int>(type: "int", nullable: false)
+                    UsersIdUser = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -105,7 +104,7 @@ namespace FinalSurveyNTTDATA.Migrations
                 columns: table => new
                 {
                     IdQuestion = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    QuestonTxt = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
+                    QuestionTxt = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
                     QuestionType = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
                     SurveyId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -147,7 +146,7 @@ namespace FinalSurveyNTTDATA.Migrations
                 {
                     IdUserAnswer = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserAns = table.Column<string>(type: "varchar(max)", unicode: false, nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     QuestionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>

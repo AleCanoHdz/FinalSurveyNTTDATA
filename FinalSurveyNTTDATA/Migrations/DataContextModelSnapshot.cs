@@ -45,13 +45,13 @@ namespace FinalSurveyNTTDATA.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("QuestionType")
+                    b.Property<string>("QuestionTxt")
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<string>("QuestonTxt")
+                    b.Property<string>("QuestionType")
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
@@ -143,11 +143,9 @@ namespace FinalSurveyNTTDATA.Migrations
 
             modelBuilder.Entity("FinalSurveyNTTDATA.Models.User", b =>
                 {
-                    b.Property<int>("IdUser")
+                    b.Property<Guid>("IdUser")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUser"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FirstSurname")
                         .IsRequired()
@@ -199,8 +197,8 @@ namespace FinalSurveyNTTDATA.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("IdUserAnswer");
 
@@ -216,8 +214,8 @@ namespace FinalSurveyNTTDATA.Migrations
                     b.Property<Guid>("RolesIdRole")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("UsersIdUser")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UsersIdUser")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("RolesIdRole", "UsersIdUser");
 
