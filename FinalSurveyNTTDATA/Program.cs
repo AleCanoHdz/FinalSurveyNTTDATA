@@ -6,6 +6,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using FinalSurveyNTTDATA.Services.CategoryService;
+using FinalSurveyNTTDATA.Services.QuestionAnswerService;
+using FinalSurveyNTTDATA.Services.QuestionService;
+using FinalSurveyNTTDATA.Services.RoleService;
+using FinalSurveyNTTDATA.Services.SurveyService;
+using FinalSurveyNTTDATA.Services.UserAnswerService;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DataContext>(options =>
@@ -41,8 +47,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-//Implementación del servicios e interfaz
+//Implementación del servicios e interfaces
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IQuestionAnswerService, QuestionAnswerService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ISurveyService, SurveyService>();
+builder.Services.AddScoped<IUserAnswerService, UserAnswerService>();
 
 //Implementacion de AutoMapper
 builder.Services.AddAutoMapper(typeof(Program).Assembly);

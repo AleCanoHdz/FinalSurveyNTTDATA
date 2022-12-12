@@ -11,6 +11,7 @@ using AutoMapper;
 using FinalSurveyNTTDATA.DTOs.Question;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
+using FinalSurveyNTTDATA.Services.QuestionService;
 
 namespace FinalSurveyNTTDATA.Controllers
 {
@@ -20,137 +21,60 @@ namespace FinalSurveyNTTDATA.Controllers
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IQuestionService _questionService;
 
-        public QuestionsController(DataContext context, IMapper mapper)
+        public QuestionsController(DataContext context, IMapper mapper, IQuestionService questionService)
         {
             _context = context;
             _mapper = mapper;
+            _questionService = questionService;
         }
 
         // GET: api/Questions
         [HttpGet]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<GetQuestionDto>>>> GetQuestion()
+        public async Task<ActionResult<ServiceResponse<List<GetQuestionDto>>>> GetQuestions()
         {
-            var response = new ServiceResponse<IEnumerable<GetQuestionDto>>();
-
-            var question = await _context.Question.Include(s => s.Survey).ToListAsync();
-
-            response.Data = question.Select(c => _mapper.Map<GetQuestionDto>(c)).ToList();
-
-            return Ok(response);
+            return Ok(await _questionService.GetQuestions());
         }
 
         // GET: api/Questions/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceResponse<GetQuestionDto>>> GetQuestion(Guid id)
         {
-            var response = new ServiceResponse<GetQuestionDto>();
-            var quest = await _context.Question.FirstOrDefaultAsync(c => c.IdQuestion.ToString().ToUpper() == id.ToString().ToUpper());
-
-            if (quest != null)
-            {
-                response.Data = _mapper.Map<GetQuestionDto>(quest);
-            }
-            else
-            {
-                response.Success = false;
-                response.Message = "Question not found";
-
-                return NotFound(response);
-            }
-
-            return Ok(response);
+            return Ok(await _questionService.GetQuestion(id));
         }
 
         // PUT: api/Questions/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult<ServiceResponse<GetQuestionDto>>> PutQuestion(UpdateQuestionDto question, Guid id)
+        public async Task<ActionResult<ServiceResponse<GetQuestionDto>>> PutQuestion(UpdateQuestionDto update, Guid id)
         {
-            ServiceResponse<GetQuestionDto> response = new ServiceResponse<GetQuestionDto>();
-            try
-            {
-                var quest = await _context.Question.FindAsync(id);
-
-                if (QuestionExists(id))
-                {
-                    _mapper.Map(question, quest);
-
-                    await _context.SaveChangesAsync();
-
-                    response.Data = _mapper.Map<GetQuestionDto>(quest);
-                }
-                else
-                {
-                    response.Success = false;
-                    response.Message = "Question not found";
-                }
-            }
-            catch (DbUpdateException ex)
-            {
-                response.Success = false;
-                response.Message = ex.Message;
-            }
-
+            var response = await _questionService.UpdateQuestion(update, id);
             if (response.Data == null)
             {
                 return NotFound(response);
             }
-
             return Ok(response);
         }
 
         // POST: api/Questions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost, Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<GetQuestionDto>>>> PostQuestion(AddQuestionDto question)
+        public async Task<ActionResult<ServiceResponse<GetQuestionDto>>> AddQuestion(AddQuestionDto question)
         {
-            var serviceResponse = new ServiceResponse<IEnumerable<GetQuestionDto>>();
-
-            Question quest = _mapper.Map<Question>(question);
-
-            _context.Question.Add(quest);
-
-            await _context.SaveChangesAsync();
-
-            serviceResponse.Data = await _context.Question.Select(c => _mapper.Map<GetQuestionDto>(c)).ToListAsync();
-
-            return Ok(serviceResponse);
+            return Ok(await _questionService.AddQuestion(question));
         }
 
         // DELETE: api/Questions/5
         [HttpDelete("{id}"), Authorize(Roles = "Admin")]
         public async Task<ActionResult<ServiceResponse<GetQuestionDto>>> DeleteQuestion(Guid id)
         {
-            ServiceResponse<IEnumerable<GetQuestionDto>> serviceResponse = new ServiceResponse<IEnumerable<GetQuestionDto>>();
-
-            try
+            var response = await _questionService.DeleteQuestion(id);
+            if (response.Data == null)
             {
-                Question quest = await _context.Question.FirstOrDefaultAsync(c => c.IdQuestion.ToString().ToUpper() == id.ToString().ToUpper());
-
-                if (quest != null)
-                {
-                    _context.Question.Remove(quest);
-                    await _context.SaveChangesAsync();
-
-                    serviceResponse.Data = _context.Question.Select(c => _mapper.Map<GetQuestionDto>(c)).ToList();
-                }
-                else
-                {
-                    serviceResponse.Success = false;
-                    serviceResponse.Message = "Question No Encontrado";
-
-                    return NotFound(serviceResponse);
-                }
+                return NotFound(response);
             }
-            catch (Exception ex)
-            {
-
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
-
-            return Ok(serviceResponse);
+            return Ok(response);
         }
 
         private bool QuestionExists(Guid id)

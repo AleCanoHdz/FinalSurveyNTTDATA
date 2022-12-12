@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using FinalSurveyNTTDATA.Data;
 using FinalSurveyNTTDATA.Models;
 using AutoMapper;
-using FinalSurveyNTTDATA.DTOs.QuestionAnswer;
 using FinalSurveyNTTDATA.DTOs.UserAnswer;
+using FinalSurveyNTTDATA.Services.UserAnswerService;
 
 namespace FinalSurveyNTTDATA.Controllers
 {
@@ -19,137 +19,60 @@ namespace FinalSurveyNTTDATA.Controllers
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly IUserAnswerService _userAnswerService;
 
-        public UserAnswersController(DataContext context, IMapper mapper)
+        public UserAnswersController(DataContext context, IMapper mapper, IUserAnswerService userAnswerService)
         {
             _context = context;
             _mapper = mapper;
+            _userAnswerService = userAnswerService;
         }
 
         // GET: api/UserAnswers
         [HttpGet]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<GetUserAnswerDto>>>> GetUserAnswer()
+        public async Task<ActionResult<ServiceResponse<List<GetUserAnswerDto>>>> GetUserAnswers()
         {
-            var response = new ServiceResponse<IEnumerable<GetUserAnswerDto>>();
-
-            var user = await _context.UserAnswer.Include(u => u.User).Include(q => q.Question).ToListAsync();
-
-            response.Data = user.Select(c => _mapper.Map<GetUserAnswerDto>(c)).ToList();
-
-            return Ok(response);
+            return Ok(await _userAnswerService.GetUserAnswers());
         }
 
         // GET: api/UserAnswers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceResponse<GetUserAnswerDto>>> GetUserAnswer(Guid id)
         {
-            var response = new ServiceResponse<GetUserAnswerDto>();
-            var ua = await _context.UserAnswer.FirstOrDefaultAsync(c => c.IdUserAnswer.ToString().ToUpper() == id.ToString().ToUpper());
-
-            if (ua != null)
-            {
-                response.Data = _mapper.Map<GetUserAnswerDto>(ua);
-            }
-            else
-            {
-                response.Success = false;
-                response.Message = "User answer not found";
-
-                return NotFound(response);
-            }
-
-            return Ok(response);
+            return Ok(await _userAnswerService.GetUserAnswer(id));
         }
 
         // PUT: api/UserAnswers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult<ServiceResponse<GetUserAnswerDto>>> PutUserAnswer(UpdateUserAnswerDto ua, Guid id)
+        public async Task<ActionResult<ServiceResponse<GetUserAnswerDto>>> PutUserAnswer(UpdateUserAnswerDto update, Guid id)
         {
-            ServiceResponse<GetUserAnswerDto> response = new ServiceResponse<GetUserAnswerDto>();
-            try
-            {
-                var usera = await _context.UserAnswer.FindAsync(id);
-
-                if (UserAnswerExists(id))
-                {
-                    _mapper.Map(ua, usera);
-
-                    await _context.SaveChangesAsync();
-
-                    response.Data = _mapper.Map<GetUserAnswerDto>(usera);
-                }
-                else
-                {
-                    response.Success = false;
-                    response.Message = "User answer not found";
-                }
-            }
-            catch (DbUpdateException ex)
-            {
-                response.Success = false;
-                response.Message = ex.Message;
-            }
-
+            var response = await _userAnswerService.UpdateUserAnswer(update, id);
             if (response.Data == null)
             {
                 return NotFound(response);
             }
-
             return Ok(response);
         }
 
         // POST: api/UserAnswers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<GetUserAnswerDto>>>> PostUserAnswer(AddUserAnswerDto ua)
+        public async Task<ActionResult<ServiceResponse<GetUserAnswerDto>>> AddUserAnswer(AddUserAnswerDto ua)
         {
-            var serviceResponse = new ServiceResponse<IEnumerable<GetUserAnswerDto>>();
-
-            UserAnswer usera = _mapper.Map<UserAnswer>(ua);
-
-            _context.UserAnswer.Add(usera);
-
-            await _context.SaveChangesAsync();
-
-            serviceResponse.Data = await _context.UserAnswer.Select(c => _mapper.Map<GetUserAnswerDto>(c)).ToListAsync();
-
-            return Ok(serviceResponse);
+            return Ok(await _userAnswerService.AddUserAnswer(ua));
         }
 
         // DELETE: api/UserAnswers/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<ServiceResponse<GetUserAnswerDto>>> DeleteUserAnswer(Guid id)
         {
-            ServiceResponse<IEnumerable<GetUserAnswerDto>> serviceResponse = new ServiceResponse<IEnumerable<GetUserAnswerDto>>();
-
-            try
+            var response = await _userAnswerService.DeleteUserAnswer(id);
+            if (response.Data == null)
             {
-                UserAnswer ua = await _context.UserAnswer.FirstOrDefaultAsync(c => c.IdUserAnswer.ToString().ToUpper() == id.ToString().ToUpper());
-
-                if (ua != null)
-                {
-                    _context.UserAnswer.Remove(ua);
-                    await _context.SaveChangesAsync();
-
-                    serviceResponse.Data = _context.UserAnswer.Select(c => _mapper.Map<GetUserAnswerDto>(c)).ToList();
-                }
-                else
-                {
-                    serviceResponse.Success = false;
-                    serviceResponse.Message = "User answer not found";
-
-                    return NotFound(serviceResponse);
-                }
+                return NotFound(response);
             }
-            catch (Exception ex)
-            {
-
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
-
-            return Ok(serviceResponse);
+            return Ok(response);
         }
 
         private bool UserAnswerExists(Guid id)

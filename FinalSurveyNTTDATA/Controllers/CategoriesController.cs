@@ -9,6 +9,7 @@ using FinalSurveyNTTDATA.Data;
 using FinalSurveyNTTDATA.Models;
 using AutoMapper;
 using FinalSurveyNTTDATA.DTOs.Category;
+using FinalSurveyNTTDATA.Services.CategoryService;
 
 namespace FinalSurveyNTTDATA.Controllers
 {
@@ -18,137 +19,60 @@ namespace FinalSurveyNTTDATA.Controllers
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly ICategoryService _categoryService;
 
-        public CategoriesController(DataContext context, IMapper mapper)
+        public CategoriesController(DataContext context, IMapper mapper, ICategoryService categoryService)
         {
             _context = context;
             _mapper = mapper;
+            _categoryService = categoryService;
         }
 
         // GET: api/Categories
         [HttpGet]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<GetCategoryDto>>>> GetCategory()
+        public async Task<ActionResult<ServiceResponse<List<GetCategoryDto>>>> GetCategories()
         {
-            var response = new ServiceResponse<IEnumerable<GetCategoryDto>>();
-
-            var category = await _context.Category.ToListAsync();
-
-            response.Data = category.Select(c => _mapper.Map<GetCategoryDto>(c)).ToList();
-
-            return Ok(response);
+            return Ok(await _categoryService.GetCategories());
         }
 
         // GET: api/Categories/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceResponse<GetCategoryDto>>> GetCategory(Guid id)
         {
-            var response = new ServiceResponse<GetCategoryDto>();
-            var cat = await _context.Category.FirstOrDefaultAsync(c => c.IdCategory.ToString().ToUpper() == id.ToString().ToUpper());
-
-            if (cat != null)
-            {
-                response.Data = _mapper.Map<GetCategoryDto>(cat);
-            }
-            else
-            {
-                response.Success = false;
-                response.Message = "Category not found";
-
-                return NotFound(response);
-            }
-
-            return Ok(response);
+            return Ok(await _categoryService.GetCategory(id));
         }
 
         // PUT: api/Categories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult<ServiceResponse<GetCategoryDto>>> PutCategory(UpdateCategoryDto category, Guid id)
+        public async Task<ActionResult<ServiceResponse<GetCategoryDto>>> PutCategory(UpdateCategoryDto update, Guid id)
         {
-            ServiceResponse<GetCategoryDto> response = new ServiceResponse<GetCategoryDto>();
-            try
-            {
-                var cat = await _context.Category.FindAsync(id);
-
-                if (CategoryExists(id))
-                {
-                    _mapper.Map(category, cat);
-
-                    await _context.SaveChangesAsync();
-
-                    response.Data = _mapper.Map<GetCategoryDto>(cat);
-                }
-                else
-                {
-                    response.Success = false;
-                    response.Message = "Category not found";
-                }
-            }
-            catch (DbUpdateException ex)
-            {
-                response.Success = false;
-                response.Message = ex.Message;
-            }
-
+            var response = await _categoryService.UpdateCategory(update, id);
             if (response.Data == null)
             {
                 return NotFound(response);
             }
-
             return Ok(response);
         }
 
         // POST: api/Categories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<GetCategoryDto>>>> PostCategory(AddCategoryDto category)
+        public async Task<ActionResult<ServiceResponse<GetCategoryDto>>> AddCategory(AddCategoryDto category)
         {
-            var serviceResponse = new ServiceResponse<IEnumerable<GetCategoryDto>>();
-
-            Category cat = _mapper.Map<Category>(category);
-
-            _context.Category.Add(cat);
-
-            await _context.SaveChangesAsync();
-
-            serviceResponse.Data = await _context.Category.Select(c => _mapper.Map<GetCategoryDto>(c)).ToListAsync();
-
-            return Ok(serviceResponse);
+            return Ok(await _categoryService.AddCategory(category));
         }
 
         // DELETE: api/Categories/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<ServiceResponse<GetCategoryDto>>> DeleteCategory(Guid id)
         {
-            ServiceResponse<IEnumerable<GetCategoryDto>> serviceResponse = new ServiceResponse<IEnumerable<GetCategoryDto>>();
-
-            try
+            var response = await _categoryService.DeleteCategory(id);
+            if (response.Data == null)
             {
-                Category cat = await _context.Category.FirstOrDefaultAsync(c => c.IdCategory.ToString().ToUpper() == id.ToString().ToUpper());
-
-                if (cat != null)
-                {
-                    _context.Category.Remove(cat);
-                    await _context.SaveChangesAsync();
-
-                    serviceResponse.Data = _context.Category.Select(c => _mapper.Map<GetCategoryDto>(c)).ToList();
-                }
-                else
-                {
-                    serviceResponse.Success = false;
-                    serviceResponse.Message = "Category not found";
-
-                    return NotFound(serviceResponse);
-                }
+                return NotFound(response);
             }
-            catch (Exception ex)
-            {
-
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
-            }
-
-            return Ok(serviceResponse);
+            return Ok(response);
         }
 
         private bool CategoryExists(Guid id)

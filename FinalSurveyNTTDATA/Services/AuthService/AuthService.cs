@@ -170,5 +170,106 @@ namespace FinalSurveyNTTDATA.Services.AuthService
             }
             return false;
         }
+
+        public async Task<ServiceResponse<List<GetUserDto>>> GetUsers()
+        {
+            var response = new ServiceResponse<List<GetUserDto>>();
+
+            var user = await _context.User.Include(c => c.Roles).ToListAsync();
+
+            response.Data = user.Select(c => _mapper.Map<GetUserDto>(c)).ToList();
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<GetUserDto>> GetUser(Guid id)
+        {
+            var response = new ServiceResponse<GetUserDto>();
+            var user = await _context.User.FirstOrDefaultAsync(c => c.IdUser == id);
+
+            if (user != null)
+            {
+                response.Data = _mapper.Map<GetUserDto>(user);
+            }
+            else
+            {
+                response.Success = false;
+                response.Message = "User not found";
+
+                return response;
+            }
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<List<GetUserDto>>> DeleteUser(Guid id)
+        {
+            ServiceResponse<List<GetUserDto>> serviceResponse = new ServiceResponse<List<GetUserDto>>();
+
+            try
+            {
+                User user = await _context.User.Include(r => r.Roles).FirstOrDefaultAsync(c => c.IdUser.ToString().ToUpper().Equals(id.ToString().ToUpper()));
+
+                if (user != null)
+                {
+                    _context.User.Remove(user);
+                    await _context.SaveChangesAsync();
+
+                    serviceResponse.Data = _context.User.Include(r => r.Roles).Select(c => _mapper.Map<GetUserDto>(c)).ToList();
+                }
+                else
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "User not found";
+
+                    return serviceResponse;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<GetUserDto>> AddUserRole(AddRoleUserDto userRole)
+        {
+            var serviceResp = new ServiceResponse<GetUserDto>();
+
+            try
+            {
+                var user = await _context.User
+                                .Include(r => r.Roles)
+                                .FirstOrDefaultAsync(u => u.IdUser == userRole.UsersIdUser);
+                if (user == null)
+                {
+                    serviceResp.Success = false;
+                    serviceResp.Message = "User not found";
+                    return serviceResp;
+                }
+
+                var role = await _context.Role
+                                .FirstOrDefaultAsync(r => r.IdRole == userRole.RolesIdRole);
+                if (role == null)
+                {
+                    serviceResp.Success = false;
+                    serviceResp.Message = "Role not found";
+                    return serviceResp;
+                }
+
+                user.Roles.Add(role);
+                await _context.SaveChangesAsync();
+                serviceResp.Data = _mapper.Map<GetUserDto>(user);
+            }
+            catch (Exception ex)
+            {
+                serviceResp.Success = false;
+                serviceResp.Message = ex.Message;
+            }
+
+            return serviceResp;
+        }
     }
 }
